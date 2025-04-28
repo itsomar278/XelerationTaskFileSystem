@@ -1,3 +1,8 @@
+using System;
+using Microsoft.EntityFrameworkCore;
+
+using XelerationTask.Infastructure.Persistence;
+
 namespace XelerationTask
 {
     public class Program
@@ -9,9 +14,12 @@ namespace XelerationTask
             // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddDbContext<FileSystemDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var app = builder.Build();
 

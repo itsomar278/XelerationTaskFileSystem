@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace XelerationTask.Core.Models
 {
-    [Table("Folders")]
+    [Table("Files")]
     public class ProjectFile : BaseEntity
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        int Id { get; set; }
+        public int Id { get; set; }
 
         [MinLength(1)]
         [MaxLength(255)]
