@@ -16,7 +16,7 @@ namespace XelerationTask.Core.Models
 
         public int ParentFolderId { get; set; }
 
-        public ProjectFolder? ParentFolder { get; set; }
+        public ProjectFolder ParentFolder { get; set; }
 
 
         public ProjectFile() { 
