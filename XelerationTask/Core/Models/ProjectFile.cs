@@ -12,6 +12,13 @@ namespace XelerationTask.Core.Models
         [MinLength(1)]
         [MaxLength(255)]
         [Required]
+        public string OriginalName { get; set; }
+
+        [MinLength(1)]
+        [MaxLength(3)]
+        [Required]
+        public string Extension {  get; set; }
+
         public string Name { get; set; }
 
         public int ParentFolderId { get; set; }
@@ -19,7 +26,10 @@ namespace XelerationTask.Core.Models
         public ProjectFolder ParentFolder { get; set; }
 
 
-        public ProjectFile() { 
+        public ProjectFile(string name){
+           
+            Name = name;
+
         }
 
     }

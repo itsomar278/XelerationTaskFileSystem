@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using XelerationTask.Core.Interfaces;
 
 namespace XelerationTask.Infastructure.Persistence.Repositories
@@ -16,7 +17,6 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
         {
             await _DbContext.Set<TEntity>().AddAsync(entity);
         }
-
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
@@ -38,6 +38,11 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
         {
             _DbContext.Set<TEntity>().Update(entity);
             return;
+        }
+
+        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _DbContext.Set<TEntity>().Where(predicate).ToListAsync();
         }
     }
 }

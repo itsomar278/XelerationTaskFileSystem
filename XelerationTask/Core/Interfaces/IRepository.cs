@@ -1,4 +1,6 @@
-﻿namespace XelerationTask.Core.Interfaces
+﻿using System.Linq.Expressions;
+
+namespace XelerationTask.Core.Interfaces
 {
     public interface IRepository<TEntity> where TEntity : class
 
@@ -12,6 +14,9 @@
         void Remove(TEntity entity);
 
         void Update(TEntity entity);
+
+        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
+
 
     }
 }

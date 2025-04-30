@@ -1,6 +1,6 @@
 ﻿using XelerationTask.Core.Interfaces;
 
-namespace XelerationTask.Infastructure.Persistence.IUnitOfWorks
+namespace XelerationTask.Infastructure.Persistence.UnitOfWorks
 {
     public class UnitOfWork :IUnitOfWork
     {

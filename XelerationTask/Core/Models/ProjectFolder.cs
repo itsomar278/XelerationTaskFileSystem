@@ -21,8 +21,17 @@ namespace XelerationTask.Core.Models
 
         public ICollection<ProjectFile> Files { get; set; }
 
-        public ProjectFolder() {
+        public ICollection<ProjectFolder> SubFolders { get; set; }
+
+
+        public ProjectFolder(string name){
+
+            Files = new List<ProjectFile>();
+            SubFolders = new List<ProjectFolder>();
+            Name = name;
+
         }
+
 
     }
 }

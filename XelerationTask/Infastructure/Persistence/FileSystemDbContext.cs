@@ -32,7 +32,7 @@ namespace XelerationTask.Infastructure.Persistence
 
             modelBuilder.Entity<ProjectFolder>()
                 .HasOne(p => p.ParentFolder)
-                .WithMany()
+                .WithMany(p => p.SubFolders)
                 .HasForeignKey(p => p.ParentFolderId);
 
         }
