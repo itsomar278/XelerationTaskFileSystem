@@ -6,6 +6,6 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
 {
     public class FileRepository : Repository<ProjectFile> , IFileRepository
     {
-        public FileRepository(DbContext dbContext) : base(dbContext) { }
+        public FileRepository(FileSystemDbContext dbContext) : base(dbContext) { }
     }
 }

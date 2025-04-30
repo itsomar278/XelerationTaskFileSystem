@@ -5,9 +5,9 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        public readonly DbContext _DbContext;
+        public readonly FileSystemDbContext _DbContext;
 
-        public Repository(DbContext context)
+        public Repository(FileSystemDbContext context)
         {
             _DbContext = context;
         }

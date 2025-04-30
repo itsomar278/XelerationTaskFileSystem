@@ -6,7 +6,7 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
 {
     public class FolderRepository : Repository<ProjectFolder> , IFolderRepository
     {
-        public FolderRepository(DbContext dbContext) : base(dbContext) { }
+        public FolderRepository(FileSystemDbContext dbContext) : base(dbContext) { }
 
     }
 }

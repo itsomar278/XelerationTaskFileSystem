@@ -1,7 +1,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-
+using XelerationTask.Core.Interfaces;
 using XelerationTask.Infastructure.Persistence;
+using XelerationTask.Infastructure.Persistence.IUnitOfWorks;
+using XelerationTask.Infastructure.Persistence.Repositories;
 
 namespace XelerationTask
 {
@@ -20,6 +22,15 @@ namespace XelerationTask
 
             builder.Services.AddDbContext<FileSystemDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+
+            builder.Services.AddTransient<IFileRepository , FileRepository>();
+
+            builder.Services.AddTransient<IFolderRepository , FolderRepository>();
+
+            builder.Services.AddTransient<IUnitOfWork , UnitOfWork>();
+
 
             var app = builder.Build();
 
