@@ -25,7 +25,7 @@ namespace XelerationTask.API.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateFolder(FolderCreateDTO folderCreateDTO)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState); 
 
             var folder = _mapper.Map<ProjectFolder>(folderCreateDTO);
 
@@ -42,9 +42,6 @@ namespace XelerationTask.API.Controllers
         {
             var folder = await _folderService.GetByIdWithDetailsAsync(id);
 
-            if (folder == null)
-                return NotFound("No File with such id found"); 
-
             var folderDto = _mapper.Map<FolderResponseDTO>(folder);
 
             return Ok(folderDto);
@@ -54,8 +51,6 @@ namespace XelerationTask.API.Controllers
         public async Task<ActionResult> DeleteFolder([FromRoute] int id)
         {
             var folder = await _folderService.GetByIdWithDetailsAsync(id);
-
-            if (folder == null) return NotFound();
 
             await _folderService.DeleteFolderAsync(id);
 
@@ -69,8 +64,6 @@ namespace XelerationTask.API.Controllers
                 return BadRequest(ModelState);
 
             var existingFolder = await _folderService.GetByIdWithDetailsAsync(folderDto.Id);
-            if (existingFolder == null)
-                return NotFound();
 
             _mapper.Map(folderDto, existingFolder);
             var updatedFolder = await _folderService.UpdateFolder(existingFolder);

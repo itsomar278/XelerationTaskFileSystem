@@ -1,4 +1,5 @@
-﻿using XelerationTask.Core.Interfaces;
+﻿using XelerationTask.Core.Exceptions;
+using XelerationTask.Core.Interfaces;
 using XelerationTask.Core.Models;
 
 namespace XelerationTask.Application.Services
@@ -9,8 +10,9 @@ namespace XelerationTask.Application.Services
 
         public async Task<ProjectFolder> CreateFolder(ProjectFolder projectFolder)
         {
-            if (projectFolder.ParentFolderId!=null && !await DoesParentExist(projectFolder)) throw new Exception("Parent Folder Not Found");
-            if (await IsDuplicateInDirectory(projectFolder)) throw new Exception("A folder with the same name Exists in the same directory");
+            if (projectFolder.ParentFolderId!=null && !await DoesParentExist(projectFolder)) throw new ResourceNotFoundException($"Parent Folder with id : {projectFolder.Id} Not Found");
+
+            if (await IsDuplicateInDirectory(projectFolder)) throw new ResourceAlreadyExistsException($"A folder with the same name : {projectFolder.Name} Exists in the same directory"); 
 
             projectFolder.CreatedAt = DateTime.Now;
             projectFolder.UpdatedAt = DateTime.Now;
@@ -32,11 +34,10 @@ namespace XelerationTask.Application.Services
         {
             var projectFolder = await GetByIdWithDetailsAsync(id);
 
-            if (projectFolder == null) return;
-
             projectFolder.UpdatedAt = DateTime.Now;
             // deleted by later when adding user 
             // updated by later when adding user 
+
             _unitOfWork.FolderRepository.SoftDelete(projectFolder);
 
             foreach (var file in projectFolder.Files){
@@ -55,9 +56,11 @@ namespace XelerationTask.Application.Services
 
         public async Task<ProjectFolder> GetByIdWithDetailsAsync(int id)
         {
+            var projectFolder = await _unitOfWork.FolderRepository.GetAsync(id);
 
-           return await _unitOfWork.FolderRepository.GetByIdWithDetailsAsync(id);
+            if(projectFolder == null) throw new ResourceNotFoundException($"Project Folder with {id} Not Found");
 
+            return projectFolder;
         }
 
         public async Task<ProjectFolder> UpdateFolder(ProjectFolder projectFolder)
@@ -65,8 +68,13 @@ namespace XelerationTask.Application.Services
             projectFolder.UpdatedAt = DateTime.Now;
             // updated by later 
 
-            if (projectFolder.SubFolders.Any(sf => sf.Id == projectFolder.ParentFolderId)) throw new Exception("You can't create a circular dependency");
+            if (projectFolder.SubFolders.Any(sf => sf.Id == projectFolder.ParentFolderId) ||
+                projectFolder.ParentFolderId == projectFolder.Id)
+                throw new InvalidOperationError("A folder can't be the child of itself or one of his childs ");
 
+            if (projectFolder.ParentFolderId != null && !await DoesParentExist(projectFolder)) throw new ResourceNotFoundException($"Parent Folder with id : {projectFolder.ParentFolderId} Not Found");
+
+            if (await IsDuplicateInDirectory(projectFolder)) throw new ResourceAlreadyExistsException($"A folder with the same name : {projectFolder.Name} Exists in the same directory");
 
             _unitOfWork.FolderRepository.Update(projectFolder);
 

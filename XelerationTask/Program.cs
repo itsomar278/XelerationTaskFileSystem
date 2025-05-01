@@ -5,6 +5,8 @@ using XelerationTask.Infastructure.Persistence;
 using XelerationTask.Infastructure.Persistence.UnitOfWorks;
 using XelerationTask.Infastructure.Persistence.Repositories;
 using XelerationTask.Application.Services;
+using Microsoft.AspNetCore.Mvc.Filters;
+using XelerationTask.API.Filters;
 
 namespace XelerationTask
 {
@@ -35,6 +37,16 @@ namespace XelerationTask
             builder.Services.AddTransient<IUnitOfWork , UnitOfWork>();
 
             builder.Services.AddScoped<IFolderService,FolderService>();
+
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddScoped<FileSystemExceptionFilter>();
+
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<FileSystemExceptionFilter>();
+            });
+
 
             var app = builder.Build();
 
