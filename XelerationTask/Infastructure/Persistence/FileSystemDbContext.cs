@@ -17,6 +17,7 @@ namespace XelerationTask.Infastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             modelBuilder.Entity<ProjectFile>()
                         .HasKey(p => p.Id);
 
@@ -35,6 +36,8 @@ namespace XelerationTask.Infastructure.Persistence
                 .WithMany(p => p.SubFolders)
                 .HasForeignKey(p => p.ParentFolderId);
 
+            modelBuilder.Entity<ProjectFolder>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<ProjectFile>().HasQueryFilter(e => !e.IsDeleted);
         }
     }
 }
