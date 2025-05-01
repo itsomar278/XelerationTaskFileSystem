@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using XelerationTask.Application.DTOs;
 using XelerationTask.Core.Interfaces;
@@ -30,9 +31,9 @@ namespace XelerationTask.API.Controllers
 
             var projectFolderResult = await _folderService.CreateFolder(folder);
 
-            // extra mapping here to return ResponseDTO 
+            var response = _mapper.Map <FolderResponseDTO>(projectFolderResult);
 
-            return Ok(projectFolderResult);
+            return Ok(response);
         }
 
 
@@ -42,12 +43,42 @@ namespace XelerationTask.API.Controllers
             var folder = await _folderService.GetByIdWithDetailsAsync(id);
 
             if (folder == null)
-                return NotFound("No File with such id found");  // custom exception and maybe moving it to service later 
+                return NotFound("No File with such id found"); 
 
             var folderDto = _mapper.Map<FolderResponseDTO>(folder);
 
             return Ok(folderDto);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteFolder([FromRoute] int id)
+        {
+            var folder = await _folderService.GetByIdWithDetailsAsync(id);
+
+            if (folder == null) return NotFound();
+
+            await _folderService.DeleteFolderAsync(id);
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<FolderResponseDTO>> UpdateFolder([FromBody] FolderUpdateDTO folderDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var existingFolder = await _folderService.GetByIdWithDetailsAsync(folderDto.Id);
+            if (existingFolder == null)
+                return NotFound();
+
+            _mapper.Map(folderDto, existingFolder);
+            var updatedFolder = await _folderService.UpdateFolder(existingFolder);
+
+            var responseDto = _mapper.Map<FolderResponseDTO>(updatedFolder);
+            return Ok(responseDto);
+        }
+
 
     }
 }

@@ -28,17 +28,24 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
             return await _DbContext.Set<TEntity>().FindAsync(id);
         }
 
-        public void Remove(TEntity entity)
-        {
-            _DbContext.Set<TEntity>().Remove(entity);
-            return;
-        }
-
         public void Update(TEntity entity)
         {
             _DbContext.Set<TEntity>().Update(entity);
             return;
         }
+
+        public void SoftDelete(TEntity entity)
+        {
+            var prop = entity.GetType().GetProperty("IsDeleted");
+
+            if (prop != null && prop.PropertyType == typeof(bool))
+            {
+                prop.SetValue(entity, true);
+                _DbContext.Set<TEntity>().Update(entity);
+            }
+
+        }
+
 
         public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {

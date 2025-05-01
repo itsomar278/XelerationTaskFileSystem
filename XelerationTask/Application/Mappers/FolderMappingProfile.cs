@@ -22,6 +22,14 @@ namespace XelerationTask.Application.Mappers
                src.Files.Select(f => new IdNameDto { Id = f.Id, Name = f.Name }).ToList()))
 
            .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy));
+
+
+
+            CreateMap<FolderUpdateDTO, ProjectFolder>()
+               .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+               .ForMember(dest => dest.ParentFolderId, opt => opt.MapFrom(src => src.ParentFolderId))
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));
+
         }
     }
 }

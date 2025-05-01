@@ -11,9 +11,9 @@ namespace XelerationTask.Core.Interfaces
 
         Task AddAsync(TEntity entity);
 
-        void Remove(TEntity entity);
-
         void Update(TEntity entity);
+        
+        void SoftDelete(TEntity entity);
 
         Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
 
