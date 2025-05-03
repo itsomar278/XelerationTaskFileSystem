@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using XelerationTask.Infastructure.Persistence;
 
@@ -11,9 +12,10 @@ using XelerationTask.Infastructure.Persistence;
 namespace XelerationTask.Migrations
 {
     [DbContext(typeof(FileSystemDbContext))]
-    partial class FileSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250503122907_AddUserEntity")]
+    partial class AddUserEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

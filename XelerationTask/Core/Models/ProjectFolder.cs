@@ -32,6 +32,5 @@ namespace XelerationTask.Core.Models
 
         }
 
-
     }
 }
