@@ -46,7 +46,6 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
 
         }
 
-
         public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _DbContext.Set<TEntity>().Where(predicate).ToListAsync();

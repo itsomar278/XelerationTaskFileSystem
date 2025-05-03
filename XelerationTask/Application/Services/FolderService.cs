@@ -1,4 +1,5 @@
-﻿using XelerationTask.Core.Exceptions;
+﻿using Microsoft.AspNetCore.Mvc;
+using XelerationTask.Core.Exceptions;
 using XelerationTask.Core.Interfaces;
 using XelerationTask.Core.Models;
 
@@ -28,6 +29,15 @@ namespace XelerationTask.Application.Services
 
             return projectFolder;
 
+        }
+
+        public async Task<QueryResult<ProjectFolder>> GetAllFolders(QueryParameters parameters)
+        {
+            var queryResult = await _unitOfWork.FolderRepository.GetAllAsyncMod(parameters);
+
+            if (queryResult == null || queryResult.Items.Count == 0) throw new ResourceNotFoundException("There is No Folders yet");
+
+            return queryResult;
         }
 
         public async Task DeleteFolderAsync(int id)
@@ -87,7 +97,7 @@ namespace XelerationTask.Application.Services
         public async Task<bool> IsDuplicateInDirectory(ProjectFolder projectFolder) {
 
             var nameOccurences = await _unitOfWork.FolderRepository.FindAsync(
-                pf => pf.Name.ToLower() == projectFolder.Name.ToLower() && !pf.IsDeleted && pf.ParentFolderId == projectFolder.ParentFolderId);
+                pf => pf.Name.ToLower() == projectFolder.Name.ToLower()  && pf.ParentFolderId == projectFolder.ParentFolderId);
 
             if (nameOccurences==null || nameOccurences.Count() ==0) return false;
 

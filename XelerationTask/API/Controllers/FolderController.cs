@@ -23,7 +23,7 @@ namespace XelerationTask.API.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> CreateFolder(FolderCreateDTO folderCreateDTO)
+        public async Task<IActionResult> CreateFolder(FolderCreateDTO folderCreateDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState); 
 
@@ -38,7 +38,7 @@ namespace XelerationTask.API.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<FolderResponseDTO>> GetFolder([FromRoute] int id)
+        public async Task<IActionResult> GetFolder([FromRoute] int id)
         {
             var folder = await _folderService.GetByIdWithDetailsAsync(id);
 
@@ -47,8 +47,24 @@ namespace XelerationTask.API.Controllers
             return Ok(folderDto);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetFolders([FromQuery] QueryParametersDTO queryParametersDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var queryParameters = _mapper.Map<QueryParameters>(queryParametersDTO);
+
+            var result = await _folderService.GetAllFolders(queryParameters);
+
+            var dtoResult = _mapper.Map<QueryResultDTO<FolderResponseDTO>>(result);
+
+            return Ok(dtoResult);
+        }
+
+
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteFolder([FromRoute] int id)
+        public async Task<IActionResult> DeleteFolder([FromRoute] int id)
         {
             var folder = await _folderService.GetByIdWithDetailsAsync(id);
 
@@ -58,7 +74,7 @@ namespace XelerationTask.API.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<FolderResponseDTO>> UpdateFolder([FromBody] FolderUpdateDTO folderDto)
+        public async Task<IActionResult> UpdateFolder([FromBody] FolderUpdateDTO folderDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

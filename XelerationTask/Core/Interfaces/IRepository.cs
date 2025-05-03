@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using XelerationTask.Core.Models;
 
 namespace XelerationTask.Core.Interfaces
 {
@@ -16,7 +17,6 @@ namespace XelerationTask.Core.Interfaces
         void SoftDelete(TEntity entity);
 
         Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
-
 
     }
 }

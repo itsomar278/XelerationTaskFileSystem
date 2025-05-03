@@ -9,5 +9,4 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
         public FileRepository(FileSystemDbContext dbContext) : base(dbContext) { }
     }
 
-
 }
