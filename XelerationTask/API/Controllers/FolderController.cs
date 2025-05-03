@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -21,7 +22,7 @@ namespace XelerationTask.API.Controllers
             this._mapper = mapper;
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateFolder(FolderCreateDTO folderCreateDTO)
         {
@@ -36,7 +37,7 @@ namespace XelerationTask.API.Controllers
             return Ok(response);
         }
 
-
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFolder([FromRoute] int id)
         {
@@ -47,6 +48,7 @@ namespace XelerationTask.API.Controllers
             return Ok(folderDto);
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetFolders([FromQuery] QueryParametersDTO queryParametersDTO)
         {
@@ -62,7 +64,7 @@ namespace XelerationTask.API.Controllers
             return Ok(dtoResult);
         }
 
-
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFolder([FromRoute] int id)
         {
@@ -73,6 +75,7 @@ namespace XelerationTask.API.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateFolder([FromBody] FolderUpdateDTO folderDto)
         {

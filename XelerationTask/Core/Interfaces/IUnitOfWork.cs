@@ -6,6 +6,8 @@
 
         public IFileRepository FileRepository { get; }
 
+        public IUserRepository UserRepository { get; }
+
         public Task<int> CompleteAsync();
 
     }

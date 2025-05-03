@@ -23,6 +23,9 @@ namespace XelerationTask.API.Filters
                 case bool _ when exception is ResourceAlreadyExistsException:
                     statusCode = 409;
                     break;
+                case bool _ when exception is NotAuthorized:
+                    statusCode = 403;
+                    break;
                 default:
                     statusCode = 500;
                     break;

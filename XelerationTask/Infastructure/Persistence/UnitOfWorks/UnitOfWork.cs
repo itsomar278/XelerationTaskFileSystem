@@ -9,11 +9,15 @@ namespace XelerationTask.Infastructure.Persistence.UnitOfWorks
         public IFolderRepository FolderRepository { get; }
         public IFileRepository FileRepository { get; }
 
-        public UnitOfWork(FileSystemDbContext fileSystemDbContext, IFileRepository fileRepository, IFolderRepository folderRepository)
+        public IUserRepository UserRepository { get; }
+
+        public UnitOfWork(FileSystemDbContext fileSystemDbContext, IFileRepository fileRepository,
+            IFolderRepository folderRepository, IUserRepository userRepository)
         {
             _fileSystemDbContext = fileSystemDbContext;
             this.FileRepository = fileRepository;
             this.FolderRepository = folderRepository;
+            this.UserRepository = userRepository;
         }
 
         public async Task<int> CompleteAsync()

@@ -7,6 +7,11 @@ using XelerationTask.Infastructure.Persistence.Repositories;
 using XelerationTask.Application.Services;
 using Microsoft.AspNetCore.Mvc.Filters;
 using XelerationTask.API.Filters;
+using XelerationTask.Infastructure.Security;
+using XelerationTask.Application.Helpers;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
 
 namespace XelerationTask
 {
@@ -21,7 +26,35 @@ namespace XelerationTask
             builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter 'Bearer' [space] and then your valid token.\n\nExample: Bearer eyJhbGciOi...etc"
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+            });
+
+
 
             builder.Services.AddDbContext<FileSystemDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -30,13 +63,21 @@ namespace XelerationTask
 
             builder.Services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
 
-            builder.Services.AddTransient<IFileRepository , FileRepository>();
+            builder.Services.AddTransient<IFileRepository, FileRepository>();
 
-            builder.Services.AddTransient<IFolderRepository , FolderRepository>();
+            builder.Services.AddTransient<IFolderRepository, FolderRepository>();
 
-            builder.Services.AddTransient<IUnitOfWork , UnitOfWork>();
+            builder.Services.AddTransient<IUserRepository, UserRepository>();
 
-            builder.Services.AddScoped<IFolderService,FolderService>();
+            builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
+
+            builder.Services.AddTransient<ITokenGenerator, TokenGenerator>();
+
+            builder.Services.AddTransient<IAuthService, AuthService>();
+
+            builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+            builder.Services.AddScoped<IFolderService, FolderService>();
 
             builder.Services.AddHttpContextAccessor();
 
@@ -47,6 +88,39 @@ namespace XelerationTask
                 options.Filters.Add<FileSystemExceptionFilter>();
             });
 
+            builder.Services.AddAuthentication("Bearer")
+                     .AddJwtBearer("Bearer", options =>
+                     {
+                         options.TokenValidationParameters = new TokenValidationParameters
+                         {
+                             ValidateIssuer = true,
+                             ValidateAudience = true,
+                             ValidateLifetime = true,
+                             ValidateIssuerSigningKey = true,
+                             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                             ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                             ClockSkew = TimeSpan.Zero,
+                             IssuerSigningKey = new SymmetricSecurityKey(
+                     Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])
+                 )
+
+                         };
+                     });
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin() 
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
+
+
+
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -57,8 +131,9 @@ namespace XelerationTask
                 app.UseSwaggerUI();
             }
 
-            app.UseAuthorization();
+            app.UseAuthentication();
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
