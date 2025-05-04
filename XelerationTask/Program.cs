@@ -79,6 +79,8 @@ namespace XelerationTask
 
             builder.Services.AddScoped<IFolderService, FolderService>();
 
+            builder.Services.AddScoped<IFileService, FileService>();
+
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddScoped<FileSystemExceptionFilter>();

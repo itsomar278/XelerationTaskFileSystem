@@ -12,6 +12,7 @@ namespace XelerationTask.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class FolderController : ControllerBase
     {
         private readonly IFolderService _folderService;
@@ -22,7 +23,6 @@ namespace XelerationTask.API.Controllers
             this._mapper = mapper;
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateFolder(FolderCreateDTO folderCreateDTO)
         {
@@ -37,7 +37,6 @@ namespace XelerationTask.API.Controllers
             return Ok(response);
         }
 
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFolder([FromRoute] int id)
         {
@@ -48,7 +47,6 @@ namespace XelerationTask.API.Controllers
             return Ok(folderDto);
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetFolders([FromQuery] QueryParametersDTO queryParametersDTO)
         {
@@ -64,18 +62,14 @@ namespace XelerationTask.API.Controllers
             return Ok(dtoResult);
         }
 
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFolder([FromRoute] int id)
         {
-            var folder = await _folderService.GetByIdWithDetailsAsync(id);
-
             await _folderService.DeleteFolderAsync(id);
 
             return Ok();
         }
 
-        [Authorize]
         [HttpPut]
         public async Task<IActionResult> UpdateFolder([FromBody] FolderUpdateDTO folderDto)
         {

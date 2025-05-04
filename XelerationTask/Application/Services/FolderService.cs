@@ -45,6 +45,7 @@ namespace XelerationTask.Application.Services
             var projectFolder = await GetByIdWithDetailsAsync(id);
 
             projectFolder.UpdatedAt = DateTime.Now;
+            projectFolder.DeletedAt = DateTime.Now;
             // deleted by later when adding user 
             // updated by later when adding user 
 

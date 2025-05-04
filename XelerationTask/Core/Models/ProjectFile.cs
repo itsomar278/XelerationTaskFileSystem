@@ -17,7 +17,6 @@ namespace XelerationTask.Core.Models
         [MinLength(1)]
         [MaxLength(3)]
         [Required]
-        public string Extension {  get; set; }
 
         public string Name { get; set; }
 
