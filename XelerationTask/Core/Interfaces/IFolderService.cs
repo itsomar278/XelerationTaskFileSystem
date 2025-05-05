@@ -1,14 +1,16 @@
-﻿using XelerationTask.Core.Models;
+﻿using System.Security.Claims;
+using XelerationTask.Application.DTOs;
+using XelerationTask.Core.Models;
 
 namespace XelerationTask.Core.Interfaces
 {
     public interface IFolderService
     {
-        public Task<ProjectFolder> CreateFolder(ProjectFolder projectFolder);
+        public Task<FolderResponseDTO> CreateFolder(FolderCreateDTO projectFolder, ClaimsPrincipal user);
+        public Task<FolderResponseDTO> GetFolderAsync(int id);
+        public Task DeleteFolderAsync(int id , ClaimsPrincipal user);
         public Task<ProjectFolder> GetByIdWithDetailsAsync(int id);
-        public Task DeleteFolderAsync(int id);
-        public Task<ProjectFolder> UpdateFolder(ProjectFolder projectFolder);
-
-        public Task<QueryResult<ProjectFolder>> GetAllFolders(QueryParameters parameters);
+        public Task<bool> UpdateFolder(int id ,FolderUpdateDTO projectFolder, ClaimsPrincipal user);
+        public Task<QueryResultDTO<FolderResponseDTO>> GetAllFolders(QueryParametersDTO parameters);
     }
 }

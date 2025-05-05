@@ -12,6 +12,7 @@ using XelerationTask.Application.Helpers;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace XelerationTask
 {
@@ -118,6 +119,17 @@ namespace XelerationTask
                         .AllowAnyMethod()
                         .AllowAnyHeader();
                 });
+            });
+
+
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var result = new BadRequestObjectResult(context.ModelState);
+                    result.ContentTypes.Add("application/json");
+                    return result;
+                };
             });
 
 

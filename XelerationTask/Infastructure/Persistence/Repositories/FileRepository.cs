@@ -21,29 +21,5 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
             return projectFile;
         }
 
-        public async Task<QueryResult<ProjectFile>> GetAllAsyncMod(QueryParameters parameters)
-        {
-            var baseQuery = _DbContext.ProjectFiles
-                .Include(f => f.ParentFolder)
-                .AsQueryable();
-
-            var filteredSortedQuery = baseQuery
-                .ApplyFiltering(parameters)
-                .ApplySorting(parameters);
-
-            var totalCount = await filteredSortedQuery.CountAsync();
-
-            var pagedResult = await filteredSortedQuery
-                .ApplyPagination(parameters)
-                .ToListAsync();
-
-            return new QueryResult<ProjectFile>
-            {
-                Items = pagedResult,
-                Page = parameters.Page,
-                PageSize = parameters.PageSize,
-                TotalCount = totalCount
-            };
-        }
     }
 }

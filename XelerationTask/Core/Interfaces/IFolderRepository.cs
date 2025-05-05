@@ -7,7 +7,5 @@ namespace XelerationTask.Core.Interfaces
     {
         public Task<ProjectFolder?> GetByIdWithDetailsAsync(int id);
 
-        public Task<QueryResult<ProjectFolder>> GetAllAsyncMod(QueryParameters parameters);
-
     }
 }

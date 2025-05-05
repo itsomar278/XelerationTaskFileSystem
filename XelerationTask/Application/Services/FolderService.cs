@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using XelerationTask.Application.DTOs;
 using XelerationTask.Core.Exceptions;
+using XelerationTask.Core.Extensions;
 using XelerationTask.Core.Interfaces;
 using XelerationTask.Core.Models;
 
@@ -8,57 +12,75 @@ namespace XelerationTask.Application.Services
     public class FolderService: IFolderService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public async Task<ProjectFolder> CreateFolder(ProjectFolder projectFolder)
+        public async Task<FolderResponseDTO> CreateFolder(FolderCreateDTO folderCreateDTO, ClaimsPrincipal user)
         {
+            var projectFolder = _mapper.Map<ProjectFolder>(folderCreateDTO);
+
             if (projectFolder.ParentFolderId!=null && !await DoesParentExist(projectFolder)) throw new ResourceNotFoundException($"Parent Folder with id : {projectFolder.Id} Not Found");
 
             if (await IsDuplicateInDirectory(projectFolder)) throw new ResourceAlreadyExistsException($"A folder with the same name : {projectFolder.Name} Exists in the same directory"); 
 
             projectFolder.CreatedAt = DateTime.Now;
             projectFolder.UpdatedAt = DateTime.Now;
-            // created by later when adding user 
-            // created by later when adding user 
+            projectFolder.CreatedBy = user.GetUserId();
+            projectFolder.UpdatedBy = user.GetUserId();
 
 
             await _unitOfWork.FolderRepository.AddAsync(projectFolder);
 
             await _unitOfWork.CompleteAsync();
 
-            projectFolder = await _unitOfWork.FolderRepository.GetAsync(projectFolder.Id);
 
-            return projectFolder;
+            var response = _mapper.Map<FolderResponseDTO>(projectFolder);
+
+            return response;
 
         }
-
-        public async Task<QueryResult<ProjectFolder>> GetAllFolders(QueryParameters parameters)
+        public async Task<FolderResponseDTO> GetFolderAsync(int id)
         {
-            var queryResult = await _unitOfWork.FolderRepository.GetAllAsyncMod(parameters);
+            var folder = await GetByIdWithDetailsAsync(id);
 
-            if (queryResult == null || queryResult.Items.Count == 0) throw new ResourceNotFoundException("There is No Folders yet");
+            var response = _mapper.Map<FolderResponseDTO>(folder);
 
-            return queryResult;
+            return response;
         }
 
-        public async Task DeleteFolderAsync(int id)
+
+        public async Task<QueryResultDTO<FolderResponseDTO>> GetAllFolders(QueryParametersDTO queryParametersDTO)
+        {
+            var parameters = _mapper.Map<QueryParameters>(queryParametersDTO);
+
+            var queryResult = await _unitOfWork.FolderRepository.GetPagedAsync(parameters);
+
+            if (queryResult == null || queryResult.Items.Count() == 0) throw new ResourceNotFoundException("There is No Folders yet");
+
+            var dtoResult = _mapper.Map<QueryResultDTO<FolderResponseDTO>>(queryResult);
+
+            return dtoResult;
+        }
+
+        public async Task DeleteFolderAsync(int id, ClaimsPrincipal user)
         {
             var projectFolder = await GetByIdWithDetailsAsync(id);
 
             projectFolder.UpdatedAt = DateTime.Now;
             projectFolder.DeletedAt = DateTime.Now;
-            // deleted by later when adding user 
-            // updated by later when adding user 
+            projectFolder.UpdatedBy = user.GetUserId();
+            projectFolder.DeletedBy = user.GetUserId();
 
             _unitOfWork.FolderRepository.SoftDelete(projectFolder);
 
             foreach (var file in projectFolder.Files){
-                
+
+                file.DeletedBy = user.GetUserId();
                 _unitOfWork.FileRepository.SoftDelete(file);
             }
 
             foreach (var subFolder in projectFolder.SubFolders){
 
-                await DeleteFolderAsync(subFolder.Id);
+                await DeleteFolderAsync(subFolder.Id , user);
             }
 
             await _unitOfWork.CompleteAsync();
@@ -67,17 +89,22 @@ namespace XelerationTask.Application.Services
 
         public async Task<ProjectFolder> GetByIdWithDetailsAsync(int id)
         {
-            var projectFolder = await _unitOfWork.FolderRepository.GetAsync(id);
+            var projectFolder = await _unitOfWork.FolderRepository.GetByIdWithDetailsAsync(id); 
 
             if(projectFolder == null) throw new ResourceNotFoundException($"Project Folder with {id} Not Found");
 
             return projectFolder;
         }
 
-        public async Task<ProjectFolder> UpdateFolder(ProjectFolder projectFolder)
+        public async Task<bool> UpdateFolder(int id ,FolderUpdateDTO folderUpdateDTO , ClaimsPrincipal user)
         {
+            var existingFolder = await GetByIdWithDetailsAsync(id);
+
+            var projectFolder = _mapper.Map(folderUpdateDTO, existingFolder);
+
             projectFolder.UpdatedAt = DateTime.Now;
-            // updated by later 
+            projectFolder.UpdatedBy = user.GetUserId();
+ 
 
             if (projectFolder.SubFolders.Any(sf => sf.Id == projectFolder.ParentFolderId) ||
                 projectFolder.ParentFolderId == projectFolder.Id)
@@ -87,12 +114,11 @@ namespace XelerationTask.Application.Services
 
             if (await IsDuplicateInDirectory(projectFolder)) throw new ResourceAlreadyExistsException($"A folder with the same name : {projectFolder.Name} Exists in the same directory");
 
-            _unitOfWork.FolderRepository.Update(projectFolder);
+            _unitOfWork.FolderRepository.Update(projectFolder); 
 
             await _unitOfWork.CompleteAsync();
 
-
-            return projectFolder;
+            return true;
         }
 
         public async Task<bool> IsDuplicateInDirectory(ProjectFolder projectFolder) {
@@ -116,9 +142,10 @@ namespace XelerationTask.Application.Services
         }
 
 
-        public FolderService(IUnitOfWork unitOfWork) {
+        public FolderService(IUnitOfWork unitOfWork , IMapper mapper) {
 
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
 
         }
 

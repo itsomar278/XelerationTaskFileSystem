@@ -15,7 +15,7 @@ namespace XelerationTask.Core.Models
         public string OriginalName { get; set; }
 
         [MinLength(1)]
-        [MaxLength(3)]
+        [MaxLength(255)]
         [Required]
 
         public string Name { get; set; }

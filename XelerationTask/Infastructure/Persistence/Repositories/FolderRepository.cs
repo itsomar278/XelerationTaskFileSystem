@@ -27,23 +27,7 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
                 .Include(f => f.Files)
                 .AsQueryable();
 
-            var filteredSortedQuery = baseQuery
-                .ApplyFiltering(parameters)
-                .ApplySorting(parameters);
-
-            var totalCount = await filteredSortedQuery.CountAsync();
-
-            var pagedResult = await filteredSortedQuery
-                .ApplyPagination(parameters)
-                .ToListAsync();
-
-            return new QueryResult<ProjectFolder>
-            {
-                Items = pagedResult,
-                Page = parameters.Page,
-                PageSize = parameters.PageSize,
-                TotalCount = totalCount
-            };
+            return await baseQuery.ToQueryResultAsync(parameters);
         }
 
 

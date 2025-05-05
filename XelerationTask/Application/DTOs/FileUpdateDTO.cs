@@ -4,8 +4,6 @@ namespace XelerationTask.Application.DTOs
 {
     public class FileUpdateDTO
     {
-        [Required]
-        public int Id { get; set; }
 
         [Required]
         [MinLength(1)]

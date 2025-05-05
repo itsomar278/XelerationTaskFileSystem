@@ -1,6 +1,8 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using XelerationTask.Core.Extensions;
 using XelerationTask.Core.Interfaces;
+using XelerationTask.Core.Models;
 
 namespace XelerationTask.Infastructure.Persistence.Repositories
 {
@@ -50,6 +52,25 @@ namespace XelerationTask.Infastructure.Persistence.Repositories
         {
             return await _DbContext.Set<TEntity>().Where(predicate).ToListAsync();
         }
+
+
+        public async Task<QueryResult<TEntity>> GetPagedAsync(QueryParameters parameters)
+        {
+            IQueryable<TEntity> query = _DbContext.Set<TEntity>();
+
+            var navigationProperties = _DbContext.Model.FindEntityType(typeof(TEntity))
+                .GetNavigations()
+                .Select(n => n.Name);
+
+            foreach (var property in navigationProperties)
+            {
+                query = query.Include(property);
+            }
+
+            return await query.ToQueryResultAsync(parameters);
+        }
+
+
     }
 }
 

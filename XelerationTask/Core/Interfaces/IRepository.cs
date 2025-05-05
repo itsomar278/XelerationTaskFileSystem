@@ -18,5 +18,7 @@ namespace XelerationTask.Core.Interfaces
 
         Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
 
+        Task<QueryResult<TEntity>> GetPagedAsync(QueryParameters parameters);
+
     }
 }

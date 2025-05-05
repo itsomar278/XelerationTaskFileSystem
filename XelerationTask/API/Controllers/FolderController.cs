@@ -1,90 +1,37 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using XelerationTask.Application.DTOs;
+using XelerationTask.Application.Services;
 using XelerationTask.Core.Interfaces;
 using XelerationTask.Core.Models;
 
-namespace XelerationTask.API.Controllers
+[Route("api/[controller]")]
+[ApiController]
+[Authorize]
+public class FolderController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    [Authorize]
-    public class FolderController : ControllerBase
-    {
-        private readonly IFolderService _folderService;
-        private readonly IMapper _mapper;
+    private readonly IFolderService _folderService;
 
-        public FolderController(IFolderService folderService, IMapper mapper) {
-            this._folderService = folderService;
-            this._mapper = mapper;
-        }
+    public FolderController(IFolderService folderService) => _folderService = folderService;
 
-        [HttpPost]
-        public async Task<IActionResult> CreateFolder(FolderCreateDTO folderCreateDTO)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState); 
+    [HttpPost("create")]
+    public async Task<IActionResult> CreateFolder(FolderCreateDTO folderCreateDTO) =>
+        Ok(await _folderService.CreateFolder(folderCreateDTO, User));
 
-            var folder = _mapper.Map<ProjectFolder>(folderCreateDTO);
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetFolder([FromRoute] int id) =>
+        Ok(await _folderService.GetFolderAsync(id));
 
-            var projectFolderResult = await _folderService.CreateFolder(folder);
+    [HttpPost("All")]
+    public async Task<IActionResult> GetFolders([FromBody] QueryParametersDTO queryParametersDTO) =>
+        Ok(await _folderService.GetAllFolders(queryParametersDTO));
 
-            var response = _mapper.Map <FolderResponseDTO>(projectFolderResult);
-
-            return Ok(response);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetFolder([FromRoute] int id)
-        {
-            var folder = await _folderService.GetByIdWithDetailsAsync(id);
-
-            var folderDto = _mapper.Map<FolderResponseDTO>(folder);
-
-            return Ok(folderDto);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetFolders([FromQuery] QueryParametersDTO queryParametersDTO)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var queryParameters = _mapper.Map<QueryParameters>(queryParametersDTO);
-
-            var result = await _folderService.GetAllFolders(queryParameters);
-
-            var dtoResult = _mapper.Map<QueryResultDTO<FolderResponseDTO>>(result);
-
-            return Ok(dtoResult);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFolder([FromRoute] int id)
-        {
-            await _folderService.DeleteFolderAsync(id);
-
-            return Ok();
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> UpdateFolder([FromBody] FolderUpdateDTO folderDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var existingFolder = await _folderService.GetByIdWithDetailsAsync(folderDto.Id);
-
-            _mapper.Map(folderDto, existingFolder);
-            var updatedFolder = await _folderService.UpdateFolder(existingFolder);
-
-            var responseDto = _mapper.Map<FolderResponseDTO>(updatedFolder);
-            return Ok(responseDto);
-        }
+    [HttpDelete("delete/{id}")]
+    public async Task<IActionResult> DeleteFolder([FromRoute] int id)=>
+        await _folderService.DeleteFolderAsync(id, User).ContinueWith(_ => NoContent());
 
 
-    }
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateFolder([FromBody] FolderUpdateDTO folderDto, [FromRoute] int id) =>
+        Ok(await _folderService.UpdateFolder(id, folderDto, User));
 }
