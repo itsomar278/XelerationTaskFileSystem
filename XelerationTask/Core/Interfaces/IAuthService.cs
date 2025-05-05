@@ -1,15 +1,17 @@
-﻿using XelerationTask.Core.Models;
+﻿using System.Security.Claims;
+using XelerationTask.Application.DTOs;
+using XelerationTask.Core.Models;
 
 namespace XelerationTask.Core.Interfaces
 {
     public interface IAuthService
     {
-        Task<User> RegisterAsync(User user , String rawPassword);
+        Task<User> RegisterAsync(UserCreateDTO userCreateDTO);
 
-        Task<(string accessToken, string refreshToken)> LoginAsync(string email, string password);
+        Task<UserLoginResultDTO> LoginAsync(UserLoginDTO userLoginDTO);
 
-        Task<(string accessToken, string refreshToken)> RefreshTokenAsync(string refreshToken);
+        Task<UserLoginResultDTO> RefreshTokenAsync(TokenRefreshDTO tokenRefreshDTO);
 
-        Task LogoutAsync(int userId);
+        Task LogoutAsync(ClaimsPrincipal user);
     }
 }

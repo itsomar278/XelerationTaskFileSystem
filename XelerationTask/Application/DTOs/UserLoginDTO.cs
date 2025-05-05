@@ -9,6 +9,6 @@ namespace XelerationTask.Application.DTOs
         public string Email { get; set; }
 
         [Required]
-        public string Passwrod { get; set; }
+        public string Password { get; set; }
     }
 }

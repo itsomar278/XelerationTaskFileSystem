@@ -26,7 +26,7 @@ namespace XelerationTask.API.Controllers
         public async Task<IActionResult> GetFile([FromRoute] int id) =>
             Ok(await _fileService.GetFileAsync(id));
 
-        [HttpGet("All")]
+        [HttpPost("All")]
         public async Task<IActionResult> GetFiles([FromBody] QueryParametersDTO queryParametersDTO) =>
             Ok(await _fileService.GetAllFilesAsync(queryParametersDTO));
 

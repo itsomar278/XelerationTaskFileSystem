@@ -19,18 +19,16 @@ namespace XelerationTask.Application.Services
         }
 
 
-        public async Task<FileResponseDTO> CreateFileAsync(FileCreateDTO fileCreateDTO , ClaimsPrincipal user)
+        public async Task<FileResponseDTO> CreateFileAsync(FileCreateDTO fileCreateDTO, ClaimsPrincipal user)
         {
             var projectFile = _mapper.Map<ProjectFile>(fileCreateDTO);
 
             var parentFolder = await _unitOfWork.FolderRepository.GetByIdWithDetailsAsync(projectFile.ParentFolderId);
 
-            if (parentFolder==null) throw new ResourceNotFoundException("No Folder with this Id was found");
+            if (parentFolder == null)
+                throw new ResourceNotFoundException("No Folder with this Id was found");
 
-            var orderInFolder = await OrderInFolder(projectFile);
-
-            if (orderInFolder > 0) projectFile.Name = projectFile.OriginalName + '(' + orderInFolder + ')';
-            else projectFile.Name = projectFile.OriginalName;
+            projectFile.Name = await GenerateFileNameWithOrder(projectFile, projectFile);
 
             projectFile.CreatedAt = DateTime.Now;
             projectFile.UpdatedAt = DateTime.Now;

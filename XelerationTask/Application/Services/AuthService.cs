@@ -1,4 +1,8 @@
-﻿using XelerationTask.Core.Exceptions;
+﻿using System.Security.Claims;
+using AutoMapper;
+using XelerationTask.Application.DTOs;
+using XelerationTask.Core.Exceptions;
+using XelerationTask.Core.Extensions;
 using XelerationTask.Core.Interfaces;
 using XelerationTask.Core.Models;
 
@@ -11,21 +15,24 @@ namespace XelerationTask.Application.Services
         private readonly IPasswordHasher _passwordHasher;
 
         private readonly ITokenGenerator _tokenGenerator;
-        public AuthService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator)
+        private readonly IMapper _mapper;
+        public AuthService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ITokenGenerator tokenGenerator, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _tokenGenerator = tokenGenerator;
+            _mapper = mapper;
         }
 
 
-        public async Task<User> RegisterAsync(User user, String rawPassword)
+        public async Task<User> RegisterAsync(UserCreateDTO userCreateDTO)
         {
-           var existingUsers = await _unitOfWork.UserRepository.FindAsync(u => u.Email == user.Email);
+            var user = _mapper.Map<User>(userCreateDTO);
+            var existingUsers = await _unitOfWork.UserRepository.FindAsync(u => u.Email == user.Email);
 
            if (existingUsers.Any()) throw new ResourceAlreadyExistsException("The Provided Email is already in use .");
 
-           var hashedResult = _passwordHasher.HashPassword(rawPassword);
+           var hashedResult = _passwordHasher.HashPassword(userCreateDTO.Password);
 
            user.PasswordHash = hashedResult.passwordHash;
            user.PasswordSalt = hashedResult.passwordSalt;
@@ -44,11 +51,16 @@ namespace XelerationTask.Application.Services
 
            await _unitOfWork.CompleteAsync();
 
-           return user;
+            var responseUser = _mapper.Map<User>(user);
+
+            return responseUser;
         }
 
-        public async Task<(string accessToken , string refreshToken)> LoginAsync(string email , string password)
+        public async Task<UserLoginResultDTO> LoginAsync(UserLoginDTO userLoginDTO)
         {
+            var email = userLoginDTO.Email;
+            var password = userLoginDTO.Password;
+
             var existingUsers = await _unitOfWork.UserRepository.FindAsync(u => u.Email == email);
 
             if (!existingUsers.Any()) throw new ResourceNotFoundException("This email isn't registered.");
@@ -71,13 +83,15 @@ namespace XelerationTask.Application.Services
 
             await _unitOfWork.CompleteAsync();
 
-            return (accessToken, refreshToken);
+            var resultDTO = _mapper.Map<UserLoginResultDTO>( (accessToken, refreshToken));
+
+            return resultDTO;
 
         }
 
-        public async Task<(string accessToken, string refreshToken)> RefreshTokenAsync(string refreshToken)
+        public async Task<UserLoginResultDTO> RefreshTokenAsync(TokenRefreshDTO tokenRefreshDTO )
         {
-            var user = await _unitOfWork.UserRepository.FindAsync(u => u.RefreshToken == refreshToken && u.RefreshTokenExpiryTime >= DateTime.Now && !u.IsDeleted);
+            var user = await _unitOfWork.UserRepository.FindAsync(u => u.RefreshToken == tokenRefreshDTO.RefreshToken && u.RefreshTokenExpiryTime >= DateTime.Now && !u.IsDeleted);
 
             if(!user.Any()) throw new NotAuthorized("Invalid Refresh Token.");
 
@@ -95,12 +109,14 @@ namespace XelerationTask.Application.Services
 
             await _unitOfWork.CompleteAsync();
 
-            return (newAccessToken, newRefreshToken);
+            var resultDTO = _mapper.Map<UserLoginResultDTO>((newAccessToken, newRefreshToken));
+
+            return resultDTO;
         }
 
-        public async Task LogoutAsync(int userId)
+        public async Task LogoutAsync(ClaimsPrincipal userClaims)
         {
-            var user = await _unitOfWork.UserRepository.FindAsync(u => u.Id == userId && !u.IsDeleted);
+            var user = await _unitOfWork.UserRepository.FindAsync(u => u.Id == userClaims.GetUserId() && !u.IsDeleted);
             var userToLogout = user.FirstOrDefault();
 
             if (userToLogout == null)
@@ -116,8 +132,6 @@ namespace XelerationTask.Application.Services
             await _unitOfWork.CompleteAsync();
             return;
         }
-
-        // fORGET AND CHANGE PASSWORD
          
     }
 
